@@ -83,7 +83,7 @@ enum {
 - (NSMutableDictionary*) toDictionaryWithId
 {
     NSMutableDictionary *dict = [self toDictionary];
-
+    
     // id is solely for internal purposes like deleteLocation method!!!
     if (id != nil) [dict setObject:id forKey:@"id"];
     
@@ -133,7 +133,7 @@ enum {
     return sqrtf((EarthRadius * EarthRadius) * (dtheta * dtheta + cos_meant * cos_meant * dlambda * dlambda));
 }
 
-/** 
+/**
  * Determines whether instance is better then Location reading
  * @param location  The new Location that you want to evaluate
  * Note: code taken from https://developer.android.com/guide/topics/location/strategies.html
@@ -144,7 +144,7 @@ enum {
         // A instance location is always better than no location
         return NO;
     }
-
+    
     // Check whether the new location fix is newer or older
     NSTimeInterval timeDelta = [self.time timeIntervalSinceDate:location.time];
     BOOL isSignificantlyNewer = timeDelta > TWO_MINUTES;
@@ -168,7 +168,7 @@ enum {
     
     // Check if the old and new location are from the same provider
     BOOL isFromSameProvider = YES; //TODO: check
-
+    
     // Determine location quality using a combination of timeliness and accuracy
     if (isMoreAccurate) {
         return YES;
@@ -177,7 +177,7 @@ enum {
     } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
         return YES;
     }
-
+    
     return NO;
 }
 
@@ -204,8 +204,10 @@ enum {
     return [NSString stringWithFormat:@"Location: id=%ld time=%ld lat=%@ lon=%@ accu=%@ aaccu=%@ speed=%@ bear=%@ alt=%@ type=%@", (long)id, (long)time, latitude, longitude, accuracy, altitudeAccuracy, speed, heading, altitude, type];
 }
 
-- (BOOL) postAsJSON:(NSString*)url withHttpHeaders:(NSMutableDictionary*)httpHeaders error:(NSError * __autoreleasing *)outError;
+- (BOOL) postAsJSON:(NSString*)siteUrl withHttpHeaders:(NSMutableDictionary*)httpHeaders error:(NSError * __autoreleasing *)outError;
 {
+    NSURL *url = [NSURL URLWithString:[siteUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+    
     NSArray *locations = [[NSArray alloc] initWithObjects:[self toDictionary], nil];
     //    NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData: data options: NSJSONReadingMutableContainers error: &e];
     NSData *data = [NSJSONSerialization dataWithJSONObject:locations options:0 error:outError];
@@ -214,7 +216,7 @@ enum {
     }
     
     NSString *jsonStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPMethod:@"POST"];
     if (httpHeaders != nil) {
@@ -258,3 +260,4 @@ enum {
 }
 
 @end
+
